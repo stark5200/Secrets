@@ -25,7 +25,6 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 mongoose.connect("mongodb+srv://stark5200:baharbe5200@webcluster.zuzdakq.mongodb.net/secretsDB");
-mongoose.set("useCreateIndex", true);
 
 const userSchema = new mongoose.Schema({
   email: String, 
@@ -56,8 +55,13 @@ app.get("/secrets", function(req, res){
   if (req.isAuthenticated()) {
     res.render("secrets")
   } else {
-    res.redirect("login")
+    res.redirect("/login")
   }
+});
+
+app.get("/logout", function(req, res){
+  req.logout();
+  res.redirect("/");
 });
 
 
@@ -77,7 +81,20 @@ app.post("/register", function(req, res){
 });
 
 app.post("/login", function(req, res){
-  
+  const user = new User({
+    username: req.body.username, 
+    password: req.body.password
+  })
+
+  req.login(user, function(err){
+    if (err) {
+      console.log(err);
+    } else {
+      passport.authenticate("local")(req, res, function(){
+        res.redirect("/secrets");
+      });
+    }
+  })
 });
 
 
